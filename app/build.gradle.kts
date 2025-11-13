@@ -104,4 +104,6 @@ dependencies {
     // Debug tools
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.icons.extended)
 }

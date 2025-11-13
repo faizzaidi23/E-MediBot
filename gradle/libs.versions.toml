@@ -17,7 +17,9 @@ playServicesMaps = "19.2.0"
 firebaseAuth = "22.3.0"
 playServicesAuth = "20.7.0"
 
+icons-extended = "1.7.5"
 [libraries]
+icons-extended = { group = "androidx.compose.material", name = "material-icons-extended-android", version.ref = "icons-extended"}
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuth" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 

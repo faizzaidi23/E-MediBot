@@ -1,79 +1,37 @@
 package com.example.emedibotsimpleuserlogin
 
-
 import android.annotation.SuppressLint
 import android.app.TimePickerDialog
 import android.content.Intent
-
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
-
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.shapes
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedButton
-
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.White
-
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -83,67 +41,135 @@ import androidx.navigation.NavHostController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
-
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
+import scheduleDailyAlarm
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import com.google.firebase.database.ValueEventListener
-
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.database
-import scheduleDailyAlarm
-
 
 data class Medicine(val name: String, var time: String)
+
+// Enhanced Color Palette
+
+val LightBlue = Color(0xFF4A90E2)
+val SoftGreen = Color(0xFF4CAF50)
+val SoftRed = Color(0xFFFF5252)
+
 @Composable
-fun dropdown(){
-    var expanded by remember {
-        mutableStateOf(false)
-    }
-    Box(modifier=Modifier.padding(1.dp),contentAlignment = Alignment.TopEnd){
+fun ImprovedDropdown() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.padding(4.dp)) {
         IconButton(
-            onClick = {expanded=!expanded}
+            onClick = { expanded = !expanded },
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                    CircleShape
+                )
         ) {
-            Icon(Icons.Default.Menu, contentDescription = "Menu")
+            Icon(
+                Icons.Default.Menu,
+                contentDescription = "Menu",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
         }
+
         DropdownMenu(
             expanded = expanded,
-
-            onDismissRequest = { expanded=false }) {
-            DropdownMenuItem(text = { Text("Profile") },
-                trailingIcon ={Icon(Icons.Outlined.Person, contentDescription = "profile")},
-                onClick = { }
-
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .width(220.dp)
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "Profile",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = { expanded = false }
             )
-            HorizontalDivider()
-            DropdownMenuItem(text = { Text("Settings") },
-                trailingIcon ={Icon(Icons.Outlined.Settings, contentDescription = "profile")},
-                onClick = { }
-
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "Settings",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = { expanded = false }
             )
-            HorizontalDivider()
-            DropdownMenuItem(text = { Text("Notifications") },
-                trailingIcon ={Icon(Icons.Outlined.Notifications, contentDescription = "profile")},
-                onClick = { }
-
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "Notifications",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = { expanded = false }
             )
-            HorizontalDivider()
-            DropdownMenuItem(text = { Text("About us") },
-                trailingIcon ={Icon(Icons.Outlined.Info, contentDescription = "profile")},
-                onClick = { }
-
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        "About us",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = { expanded = false }
             )
-
         }
     }
 }
 
 @SuppressLint("NewApi")
 @Composable
-fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
+fun HomeScreen(onSignOut: () -> Unit, navController: NavHostController) {
     val context = LocalContext.current
     var medicines by remember { mutableStateOf(emptyList<Medicine>()) }
-
 
     LaunchedEffect(Unit) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@LaunchedEffect
@@ -160,16 +186,11 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
                 medicines = medicineList.sortedBy { it.time }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-//                Toast.makeText(context, "Failed to load medicines: ${error.message}", Toast.LENGTH_SHORT).show()
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
-
     val nextMedicine = medicines.firstOrNull()
-
-
     var newMedicineName by remember { mutableStateOf("") }
     var newMedicineTime by remember { mutableStateOf("") }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -191,68 +212,98 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorScheme.background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background
+                    )
+                )
+            )
     ) {
-
-
         val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
+            // Enhanced Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .shadow(8.dp, CircleShape)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)
+                                    )
+                                ),
+                                CircleShape
+                            )
+                            .padding(4.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.emedibot),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
 
-                Image(
-                    painter = painterResource(id = R.drawable.emedibot),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(48.dp)
-                )
+                    Spacer(modifier = Modifier.width(16.dp))
 
-
-                Row(
-
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 0.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "",
-                        style = typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    dropdown()
+                    Column {
+                        Text(
+                            text = "Emedibot",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Text(
+                            text = "Your Health Companion",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        )
+                    }
                 }
+
+                ImprovedDropdown()
             }
 
-
+            // Enhanced Upcoming Dose Card
             nextMedicine?.let {
                 var isUpcomingExpanded by remember { mutableStateOf(true) }
+                val rotation by animateFloatAsState(
+                    targetValue = if (isUpcomingExpanded) 180f else 0f,
+                    animationSpec = tween(durationMillis = 300)
+                )
 
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant),
-                    shape = MaterialTheme.shapes.large
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(12.dp, RoundedCornerShape(24.dp)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(24.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
-
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -260,31 +311,114 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Upcoming Dose", style = typography.titleLarge)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Notifications,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    "Upcoming Dose",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
 
-                            val icon = if (isUpcomingExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down
-                            Image(
-                                painter = painterResource(id = icon),
-                                contentDescription = "Toggle Upcoming Dose",
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height(24.dp)
+                            Icon(
+                                Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Toggle",
+                                modifier = Modifier.graphicsLayer(rotationZ = rotation)
                             )
                         }
 
-                        AnimatedVisibility(visible = isUpcomingExpanded) {
-                            Column {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("${it.name}", fontSize = 20.sp)
-                                Text("Time: ${it.time}", fontSize = 16.sp)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                ElevatedButton(
-                                    onClick = {
-                                        Toast.makeText(context, "Viewing Instructions for ${it.name}...", Toast.LENGTH_SHORT).show()
-                                    },
-                                    modifier = Modifier.align(Alignment.End)
+                        AnimatedVisibility(
+                            visible = isUpcomingExpanded,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            Column(modifier = Modifier.padding(top = 16.dp)) {
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                                    shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Text("Instructions")
+                                    Row(
+                                        modifier = Modifier.padding(16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = it.name,
+                                                style = MaterialTheme.typography.headlineSmall.copy(
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(
+                                                    Icons.Outlined.Schedule,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.6f
+                                                    )
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = it.time,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.8f
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        Toast.makeText(
+                                            context,
+                                            "Viewing Instructions for ${it.name}...",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    shape = RoundedCornerShape(14.dp),
+                                    contentPadding = PaddingValues(vertical = 14.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Info,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "View Instructions",
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -292,72 +426,161 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
                 }
             }
 
+            // Device Status Card
+            ImprovedDeviceStatusCard()
 
-            DeviceStatusCard()
-
-            ElevatedButton(
+            // Enhanced Order Button
+            Button(
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, "https://www.pharmeasy.in".toUri())
                     context.startActivity(intent)
                 },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.elevatedButtonColors(
-                    containerColor = Red,
-                    contentColor = Black
-                )
-            ) {
-                Text("Order New Medicines", fontSize = 16.sp)
-            }
-
-            ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black, shape = shapes.medium),
-                shape = shapes.medium
+                    .height(60.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Red
+                ),
+                shape = RoundedCornerShape(16.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Icon(
+                    Icons.Outlined.ShoppingCart,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    "Order New Medicines",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-                    Text(
-                        text = "Add New Medicine",
-                        style = typography.titleMedium,
-                        color = colorScheme.onSurface
-                    )
+            // Enhanced Add Medicine Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(8.dp, RoundedCornerShape(24.dp)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Outlined.Add,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Add New Medicine",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     OutlinedTextField(
                         value = newMedicineName,
                         onValueChange = { newMedicineName = it },
                         label = { Text("Medicine Name") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = shapes.medium,
-                        singleLine = true
+                        shape = RoundedCornerShape(14.dp),
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.MedicalServices,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Time: ${if (newMedicineTime.isBlank()) "Not Set" else newMedicineTime}",
-                            color = colorScheme.onSurface
+                    OutlinedCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showTimePicker = true },
+                        shape = RoundedCornerShape(14.dp),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                                )
+                            )
                         )
-                        Button(onClick = { showTimePicker = true }) {
-                            Text("Set Time")
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(18.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Outlined.Schedule,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Schedule Time",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                    Text(
+                                        text = if (newMedicineTime.isBlank()) "Not Set" else newMedicineTime,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
+                                }
+                            }
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // --- FIX START: Simplified "Add Medicine" logic ---
-                    OutlinedButton(
+                    Button(
                         onClick = {
                             if (newMedicineName.isNotBlank() && newMedicineTime.isNotBlank()) {
-
-                                addMedicineToFirebase(Medicine(newMedicineName.trim(), newMedicineTime))
+                                addMedicineToFirebase(
+                                    Medicine(
+                                        newMedicineName.trim(),
+                                        newMedicineTime
+                                    )
+                                )
 
                                 val timeParts = newMedicineTime.split(":", " ")
                                 if (timeParts.size >= 3) {
@@ -373,85 +596,136 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
 
                                 newMedicineName = ""
                                 newMedicineTime = ""
+                                Toast.makeText(
+                                    context,
+                                    "Medicine added successfully!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             } else {
-                                Toast.makeText(context, "Please enter name and time", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Please enter name and time",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Text("Add Medicine")
+                        Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Add Medicine",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
                     }
-
                 }
             }
 
-
-            Text(
-                text = "Today's Schedule",
-                style = typography.headlineSmall.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp)
-                    .shadow(12.dp, spotColor = Color.Cyan),
-
-                textAlign = TextAlign.Center
-            )
-
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                medicines.forEach { medicine ->
-                    MedicineScheduleItem(
-                        medicine = medicine,
-                        onTimeChange = { newTime ->
-
-                            updateSingleFirebaseMedicineTime(medicine.name, newTime)
-
-                            // Also re-schedule the alarm with the new time
-                            val timeParts = newTime.split(":", " ")
-                            if (timeParts.size >= 3) {
-                                var hour = timeParts[0].toInt()
-                                val minute = timeParts[1].toInt()
-                                val amPm = timeParts[2]
-                                if (amPm.equals("PM", ignoreCase = true) && hour != 12) hour += 12
-                                if (amPm.equals("AM", ignoreCase = true) && hour == 12) hour = 0
-                                scheduleDailyAlarm(context, hour, minute, medicine.name)
-                            }
-                        },
-                        onDelete = {
-
-                            deleteMedicine(medicine) {
-
-                                medicines = medicines.filter { it.name != medicine.name }
-                            }
+            // Today's Schedule Section
+            if (medicines.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.CalendarToday,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Today's Schedule",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
                         }
-                    )
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = CircleShape,
+                            shadowElevation = 2.dp
+                        ) {
+                            Text(
+                                text = "${medicines.size}",
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
 
+                // Medicine List
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    medicines.forEach { medicine ->
+                        MedicineScheduleItem(
+                            medicine = medicine,
+                            onTimeChange = { newTime ->
+                                updateSingleFirebaseMedicineTime(medicine.name, newTime)
+
+                                val timeParts = newTime.split(":", " ")
+                                if (timeParts.size >= 3) {
+                                    var hour = timeParts[0].toInt()
+                                    val minute = timeParts[1].toInt()
+                                    val amPm = timeParts[2]
+                                    if (amPm.equals("PM", ignoreCase = true) && hour != 12) hour += 12
+                                    if (amPm.equals("AM", ignoreCase = true) && hour == 12) hour = 0
+                                    scheduleDailyAlarm(context, hour, minute, medicine.name)
+                                }
+                            },
+                            onDelete = {
+                                deleteMedicine(medicine) {
+                                    medicines = medicines.filter { it.name != medicine.name }
+                                    Toast.makeText(
+                                        context,
+                                        "${medicine.name} deleted",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        )
+                    }
+                }
             }
 
-
+            Spacer(modifier = Modifier.height(80.dp))
         }
 
+        // Enhanced Floating Action Button
         FloatingActionButton(
             onClick = { navController.navigate("chatbot") },
             modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp)
-                .border(
-                    width = 1.dp,
-                    color = Color.Gray.copy(alpha = 0.2f),
-                    shape = CircleShape
-                ),
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+                .size(68.dp)
+                .shadow(12.dp, CircleShape),
             shape = CircleShape,
-            containerColor = Black.copy(alpha = 0.1f),
+            containerColor = MaterialTheme.colorScheme.primary,
             elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp,
-                focusedElevation = 0.dp,
-                hoveredElevation = 0.dp
+                defaultElevation = 8.dp,
+                pressedElevation = 12.dp
             )
         ) {
             Icon(
@@ -461,36 +735,17 @@ fun HomeScreen(onSignOut: () -> Unit,navController: NavHostController) {
                 modifier = Modifier.size(32.dp)
             )
         }
-
     }
 }
-
-
-fun deleteMedicine(
-    medicine: Medicine,
-    onSuccess: () -> Unit
-) {
-    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-    val ref = Firebase.database.getReference("users").child(uid).child("medicines").child(medicine.name.replace(" ", "_"))
-
-    ref.removeValue().addOnSuccessListener {
-        onSuccess()
-    }
-}
-
-
 
 @Composable
-fun DeviceStatusCard() {
+fun ImprovedDeviceStatusCard() {
     val context = LocalContext.current
     val database = Firebase.database
 
     var dispenserStatus by remember { mutableStateOf("Not connected") }
     var batteryLevel by remember { mutableStateOf("N/A") }
-
-
     var isExpanded by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(Unit) {
         val statusRef = database.getReference("device_status")
@@ -499,93 +754,195 @@ fun DeviceStatusCard() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val status = snapshot.getValue(String::class.java)
                 dispenserStatus = when (status) {
-                    "connected" -> "✅ Connected"
-                    else -> "❌ Not connected"
+                    "connected" -> "Connected"
+                    else -> "Not connected"
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-//                Toast.makeText(context, "Failed to load dispenser status", Toast.LENGTH_SHORT).show()
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
 
         statusRef.child("battery").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val battery = snapshot.getValue(String::class.java)
-                batteryLevel = battery?.let { "\uD83D\uDD0B $battery%" } ?: "N/A"
+                batteryLevel = battery ?: "N/A"
             }
 
-            override fun onCancelled(error: DatabaseError) {
-//                Toast.makeText(context, "Failed to load battery level", Toast.LENGTH_SHORT).show()
-            }
+            override fun onCancelled(error: DatabaseError) {}
         })
     }
 
+    val isConnected = dispenserStatus == "Connected"
+    val statusColor = if (isConnected) SoftGreen else SoftRed
+    val rotation by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(300)
+    )
 
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant),
-        shape =shapes.medium
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header row with toggle icon
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Device Status", style = typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(statusColor.copy(alpha = 0.2f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Outlined.PhoneAndroid,
+                            contentDescription = null,
+                            tint = statusColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Column {
+                        Text(
+                            "Device Status",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        if (!isExpanded) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(statusColor, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    dispenserStatus,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = statusColor,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+                }
 
-
-                val icon = if (isExpanded) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down
-                Image(
-                    painter = painterResource(id = icon),
+                Icon(
+                    Icons.Default.KeyboardArrowDown,
                     contentDescription = "Toggle",
-                    modifier = Modifier
-                        .width(24.dp)
-                        .height(24.dp)
-                        .clickable { isExpanded = !isExpanded }
+                    modifier = Modifier.graphicsLayer(rotationZ = rotation)
                 )
             }
 
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column(modifier = Modifier.padding(top = 16.dp)) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
 
-            AnimatedVisibility(visible = isExpanded) {
-                Column {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Dispenser: $dispenserStatus")
-                    Text("Battery Level: $batteryLevel")
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Dispenser:",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(statusColor, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    dispenserStatus,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = statusColor
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Battery:",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Outlined.BatteryChargingFull,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = if (batteryLevel != "N/A") SoftGreen else Color.Gray
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    if (batteryLevel != "N/A") "$batteryLevel%" else batteryLevel,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = if (batteryLevel != "N/A") SoftGreen else Color.Gray
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-
-fun addMedicineToFirebase(medicine: Medicine) {
-    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-    val ref = Firebase.database.getReference("users").child(uid).child("medicines")
-    ref.child(medicine.name.replace(" ", "_")).setValue(medicine.time)
-}
-
-
-fun updateSingleFirebaseMedicineTime(medicineName: String, newTime: String) {
-    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-    val ref = Firebase.database.getReference("users")
-        .child(uid)
-        .child("medicines")
-        .child(medicineName.replace(" ", "_"))
-    ref.setValue(newTime)
-}
-// --- FIX END ---
-
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MedicineScheduleItem(medicine: Medicine, onTimeChange: (String) -> Unit, onDelete: () -> Unit) {
+fun MedicineScheduleItem(
+    medicine: Medicine,
+    onTimeChange: (String) -> Unit,
+    onDelete: () -> Unit
+) {
     var showTimePicker by remember { mutableStateOf(false) }
-    // This state is now driven by the 'medicine' prop, which comes from the HomeScreen's state.
-    val currentTime = medicine.time
-
     val context = LocalContext.current
 
     if (showTimePicker) {
@@ -594,7 +951,6 @@ fun MedicineScheduleItem(medicine: Medicine, onTimeChange: (String) -> Unit, onD
             context,
             { _, hour, minute ->
                 val formattedTime = formatTime(hour, minute)
-                // The onTimeChange lambda now handles all the update logic.
                 onTimeChange(formattedTime)
                 showTimePicker = false
             },
@@ -604,37 +960,109 @@ fun MedicineScheduleItem(medicine: Medicine, onTimeChange: (String) -> Unit, onD
         ).show()
     }
 
-    ElevatedCard  (
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant),
-        shape = shapes.medium
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(18.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(18.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = medicine.name, style = typography.titleSmall)
-            Text(text = "Time: $currentTime", style = typography.bodySmall)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = medicine.name,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = medicine.time,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OutlinedButton (
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
                     onClick = { showTimePicker = true },
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                            CircleShape
+                        )
                 ) {
-                    Text("Set Time", fontSize = 14.sp)
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Edit Time",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
 
-                OutlinedButton(
+                IconButton(
                     onClick = onDelete,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Color(0xFFFFEBEE),
+                            CircleShape
+                        )
                 ) {
-                    Text("Delete", fontSize = 14.sp, color =colorScheme.error)
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
-
     }
+}
 
+fun deleteMedicine(medicine: Medicine, onSuccess: () -> Unit) {
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    val ref = Firebase.database.getReference("users")
+        .child(uid)
+        .child("medicines")
+        .child(medicine.name.replace(" ", "_"))
+    ref.removeValue().addOnSuccessListener {
+        onSuccess()
+    }
+}
+
+fun addMedicineToFirebase(medicine: Medicine) {
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    val ref = Firebase.database.getReference("users").child(uid).child("medicines")
+    ref.child(medicine.name.replace(" ", "_")).setValue(medicine.time)
+}
+
+fun updateSingleFirebaseMedicineTime(medicineName: String, newTime: String) {
+    val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    val ref = Firebase.database.getReference("users")
+        .child(uid)
+        .child("medicines")
+        .child(medicineName.replace(" ", "_"))
+    ref.setValue(newTime)
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
